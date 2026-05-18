@@ -1,0 +1,103 @@
+{
+  "eda_date": "2026-05-19T02:36:07.321379",
+  "dataset_overview": {
+    "total_rows": 920,
+    "total_columns": 16,
+    "numeric_features": 8,
+    "categorical_features": 8
+  },
+  "target_variable": {
+    "name": "num",
+    "distribution": {
+      "0": 411,
+      "1": 265,
+      "2": 109,
+      "3": 107,
+      "4": 28
+    },
+    "class_balance": {
+      "0": 44.67,
+      "1": 28.8,
+      "2": 11.85,
+      "3": 11.63,
+      "4": 3.04
+    }
+  },
+  "missing_values": {
+    "id": 0,
+    "age": 0,
+    "sex": 0,
+    "dataset": 0,
+    "cp": 0,
+    "trestbps": 59,
+    "chol": 30,
+    "fbs": 90,
+    "restecg": 2,
+    "thalch": 55,
+    "exang": 55,
+    "oldpeak": 62,
+    "slope": 309,
+    "ca": 611,
+    "thal": 486,
+    "num": 0
+  },
+  "numeric_statistics": {
+    "id": {
+      "min": 1.0,
+      "max": 920.0,
+      "mean": 460.5,
+      "median": 460.5,
+      "std": 265.72542219366215
+    },
+    "age": {
+      "min": 28.0,
+      "max": 77.0,
+      "mean": 53.51086956521739,
+      "median": 54.0,
+      "std": 9.424685209576857
+    },
+    "trestbps": {
+      "min": 0.0,
+      "max": 200.0,
+      "mean": 132.13240418118468,
+      "median": 130.0,
+      "std": 19.066069518587476
+    },
+    "chol": {
+      "min": 0.0,
+      "max": 603.0,
+      "mean": 199.13033707865168,
+      "median": 223.0,
+      "std": 110.7808103532305
+    },
+    "thalch": {
+      "min": 60.0,
+      "max": 202.0,
+      "mean": 137.5456647398844,
+      "median": 140.0,
+      "std": 25.926276492797594
+    },
+    "oldpeak": {
+      "min": -2.6,
+      "max": 6.2,
+      "mean": 0.8787878787878788,
+      "median": 0.5,
+      "std": 1.0912262483465298
+    },
+    "ca": {
+      "min": 0.0,
+      "max": 3.0,
+      "mean": 0.6763754045307443,
+      "median": 0.0,
+      "std": 0.935653012559987
+    },
+    "num": {
+      "min": 0.0,
+      "max": 4.0,
+      "mean": 0.9956521739130435,
+      "median": 1.0,
+      "std": 1.142693403338037
+    }
+  },
+  "outliers_detected": true
+}

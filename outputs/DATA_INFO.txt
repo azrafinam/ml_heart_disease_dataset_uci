@@ -1,0 +1,14 @@
+
+DATASET: UCI Heart Disease
+Generated: 2026-05-19 02:35:58.105578
+
+DIMENSIONS: 920 rows × 16 columns
+
+COLUMNS:
+['id', 'age', 'sex', 'dataset', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalch', 'exang', 'oldpeak', 'slope', 'ca', 'thal', 'num']
+
+MISSING VALUES:
+1759 total missing values
+
+DATA TYPES:
+{'id': dtype('int64'), 'age': dtype('int64'), 'sex': <StringDtype(storage='python', na_value=nan)>, 'dataset': <StringDtype(storage='python', na_value=nan)>, 'cp': <StringDtype(storage='python', na_value=nan)>, 'trestbps': dtype('float64'), 'chol': dtype('float64'), 'fbs': dtype('O'), 'restecg': <StringDtype(storage='python', na_value=nan)>, 'thalch': dtype('float64'), 'exang': dtype('O'), 'oldpeak': dtype('float64'), 'slope': <StringDtype(storage='python', na_value=nan)>, 'ca': dtype('float64'), 'thal': <StringDtype(storage='python', na_value=nan)>, 'num': dtype('int64')}

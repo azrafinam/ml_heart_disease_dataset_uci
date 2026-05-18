@@ -1,0 +1,30 @@
+{
+  "model_name": "xgboost",
+  "model_version": "1.0",
+  "creation_date": "2026-05-17T20:31:42.936878",
+  "performance_metrics": {
+    "accuracy": 0.6086956521739131,
+    "precision": 0.5954710952497242,
+    "recall": 0.6086956521739131,
+    "f1_score": 0.6018678579050502,
+    "roc_auc": 0.8356534063838161
+  },
+  "model_type": "Classification Pipeline",
+  "dataset": "UCI Heart Disease",
+  "target": "Heart Disease Presence (Binary)",
+  "file_path": "outputs/models/xgboost_final.pkl",
+  "python_version": "3.8+",
+  "scikit_learn_version": "1.0+",
+  "xgboost_version": "1.5+",
+  "preprocessing": {
+    "feature_scaling": "StandardScaler",
+    "missing_values": "SimpleImputer (median)",
+    "encoding": "LabelEncoder"
+  },
+  "model_parameters": {
+    "n_estimators": 100,
+    "max_depth": 5,
+    "learning_rate": 0.1,
+    "random_state": 42
+  }
+}

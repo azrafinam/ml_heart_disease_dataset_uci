@@ -1,0 +1,18 @@
+# Model Usage Guide
+
+Load the final bundle and pass raw feature rows with the original feature columns
+except `id` and `num`.
+
+```python
+import joblib
+import pandas as pd
+
+bundle = joblib.load("outputs/models/hist_gradient_boosting_final_bundle.pkl")
+preprocessor = bundle["preprocessor"]
+model = bundle["model"]
+
+raw_rows = pd.DataFrame([...])
+X_new_array = preprocessor.transform(raw_rows)
+X_new = pd.DataFrame(X_new_array, columns=bundle["feature_names"])
+predictions = model.predict(X_new)
+```

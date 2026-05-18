@@ -1,0 +1,154 @@
+{
+  "exploration_date": "2026-05-19T02:35:58.092024",
+  "dataset": {
+    "name": "UCI Heart Disease",
+    "rows": 920,
+    "columns": 16,
+    "shape": "920 \u00d7 16"
+  },
+  "data_quality": {
+    "missing_values": 1759,
+    "duplicate_rows": 0,
+    "numeric_columns": 8,
+    "categorical_columns": 8
+  },
+  "columns": {
+    "id": {
+      "dtype": "int64",
+      "unique_values": 920,
+      "missing": 0
+    },
+    "age": {
+      "dtype": "int64",
+      "unique_values": 50,
+      "missing": 0
+    },
+    "sex": {
+      "dtype": "str",
+      "unique_values": 2,
+      "missing": 0
+    },
+    "dataset": {
+      "dtype": "str",
+      "unique_values": 4,
+      "missing": 0
+    },
+    "cp": {
+      "dtype": "str",
+      "unique_values": 4,
+      "missing": 0
+    },
+    "trestbps": {
+      "dtype": "float64",
+      "unique_values": 61,
+      "missing": 59
+    },
+    "chol": {
+      "dtype": "float64",
+      "unique_values": 217,
+      "missing": 30
+    },
+    "fbs": {
+      "dtype": "object",
+      "unique_values": 2,
+      "missing": 90
+    },
+    "restecg": {
+      "dtype": "str",
+      "unique_values": 3,
+      "missing": 2
+    },
+    "thalch": {
+      "dtype": "float64",
+      "unique_values": 119,
+      "missing": 55
+    },
+    "exang": {
+      "dtype": "object",
+      "unique_values": 2,
+      "missing": 55
+    },
+    "oldpeak": {
+      "dtype": "float64",
+      "unique_values": 53,
+      "missing": 62
+    },
+    "slope": {
+      "dtype": "str",
+      "unique_values": 3,
+      "missing": 309
+    },
+    "ca": {
+      "dtype": "float64",
+      "unique_values": 4,
+      "missing": 611
+    },
+    "thal": {
+      "dtype": "str",
+      "unique_values": 3,
+      "missing": 486
+    },
+    "num": {
+      "dtype": "int64",
+      "unique_values": 5,
+      "missing": 0
+    }
+  },
+  "target_distribution": {
+    "0": 411,
+    "1": 265,
+    "2": 109,
+    "3": 107,
+    "4": 28
+  },
+  "numeric_ranges": {
+    "id": {
+      "min": 1.0,
+      "max": 920.0,
+      "mean": 460.5,
+      "std": 265.72542219366215
+    },
+    "age": {
+      "min": 28.0,
+      "max": 77.0,
+      "mean": 53.51086956521739,
+      "std": 9.424685209576857
+    },
+    "trestbps": {
+      "min": 0.0,
+      "max": 200.0,
+      "mean": 132.13240418118468,
+      "std": 19.066069518587476
+    },
+    "chol": {
+      "min": 0.0,
+      "max": 603.0,
+      "mean": 199.13033707865168,
+      "std": 110.7808103532305
+    },
+    "thalch": {
+      "min": 60.0,
+      "max": 202.0,
+      "mean": 137.5456647398844,
+      "std": 25.926276492797594
+    },
+    "oldpeak": {
+      "min": -2.6,
+      "max": 6.2,
+      "mean": 0.8787878787878788,
+      "std": 1.0912262483465298
+    },
+    "ca": {
+      "min": 0.0,
+      "max": 3.0,
+      "mean": 0.6763754045307443,
+      "std": 0.935653012559987
+    },
+    "num": {
+      "min": 0.0,
+      "max": 4.0,
+      "mean": 0.9956521739130435,
+      "std": 1.142693403338037
+    }
+  }
+}

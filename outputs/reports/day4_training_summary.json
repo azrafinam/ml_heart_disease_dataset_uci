@@ -1,0 +1,148 @@
+{
+  "training_date": "2026-05-19T02:38:07.853855",
+  "total_models_defined": 22,
+  "total_models_trained": 22,
+  "models_trained": [
+    "dummy_baseline",
+    "logistic_regression",
+    "ridge_classifier",
+    "sgd_classifier",
+    "perceptron",
+    "knn",
+    "gaussian_nb",
+    "linear_svm",
+    "svm_rbf",
+    "decision_tree",
+    "random_forest",
+    "extra_trees",
+    "bagging",
+    "adaboost",
+    "gradient_boosting",
+    "hist_gradient_boosting",
+    "linear_discriminant_analysis",
+    "nearest_centroid",
+    "xgboost",
+    "lightgbm",
+    "catboost",
+    "random_forest_random_search"
+  ],
+  "training_log": [
+    {
+      "model": "dummy_baseline",
+      "status": "success",
+      "timestamp": "2026-05-19T02:37:50.544807"
+    },
+    {
+      "model": "logistic_regression",
+      "status": "success",
+      "timestamp": "2026-05-19T02:37:50.558728"
+    },
+    {
+      "model": "ridge_classifier",
+      "status": "success",
+      "timestamp": "2026-05-19T02:37:50.561456"
+    },
+    {
+      "model": "sgd_classifier",
+      "status": "success",
+      "timestamp": "2026-05-19T02:37:50.582512"
+    },
+    {
+      "model": "perceptron",
+      "status": "success",
+      "timestamp": "2026-05-19T02:37:50.586358"
+    },
+    {
+      "model": "knn",
+      "status": "success",
+      "timestamp": "2026-05-19T02:37:50.589240"
+    },
+    {
+      "model": "gaussian_nb",
+      "status": "success",
+      "timestamp": "2026-05-19T02:37:50.591264"
+    },
+    {
+      "model": "linear_svm",
+      "status": "success",
+      "timestamp": "2026-05-19T02:37:50.599222"
+    },
+    {
+      "model": "svm_rbf",
+      "status": "success",
+      "timestamp": "2026-05-19T02:37:50.675595"
+    },
+    {
+      "model": "decision_tree",
+      "status": "success",
+      "timestamp": "2026-05-19T02:37:50.678964"
+    },
+    {
+      "model": "random_forest",
+      "status": "success",
+      "timestamp": "2026-05-19T02:37:51.066462"
+    },
+    {
+      "model": "extra_trees",
+      "status": "success",
+      "timestamp": "2026-05-19T02:37:51.343265"
+    },
+    {
+      "model": "bagging",
+      "status": "success",
+      "timestamp": "2026-05-19T02:37:53.443543"
+    },
+    {
+      "model": "adaboost",
+      "status": "success",
+      "timestamp": "2026-05-19T02:37:53.540030"
+    },
+    {
+      "model": "gradient_boosting",
+      "status": "success",
+      "timestamp": "2026-05-19T02:37:54.001170"
+    },
+    {
+      "model": "hist_gradient_boosting",
+      "status": "success",
+      "timestamp": "2026-05-19T02:38:00.450228"
+    },
+    {
+      "model": "linear_discriminant_analysis",
+      "status": "success",
+      "timestamp": "2026-05-19T02:38:00.453140"
+    },
+    {
+      "model": "nearest_centroid",
+      "status": "success",
+      "timestamp": "2026-05-19T02:38:00.454388"
+    },
+    {
+      "model": "xgboost",
+      "status": "success",
+      "timestamp": "2026-05-19T02:38:01.560255"
+    },
+    {
+      "model": "lightgbm",
+      "status": "success",
+      "timestamp": "2026-05-19T02:38:06.220775"
+    },
+    {
+      "model": "catboost",
+      "status": "success",
+      "timestamp": "2026-05-19T02:38:06.535740"
+    },
+    {
+      "model": "random_forest_random_search",
+      "status": "success",
+      "timestamp": "2026-05-19T02:38:07.853678"
+    }
+  ],
+  "data_split": {
+    "train_samples": 736,
+    "test_samples": 184,
+    "features": 29,
+    "random_state": 42,
+    "split_before_preprocessing": true
+  }
+}

@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+
+# Local runtime caches and logs
+catboost_info/
+
+# Optional local environment files
+.env
+.venv/
+venv/

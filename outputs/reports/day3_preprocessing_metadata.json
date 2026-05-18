@@ -1,0 +1,103 @@
+{
+  "preprocessing_date": "2026-05-19T02:36:14.108177",
+  "original_shape": {
+    "rows": 920,
+    "columns": 16
+  },
+  "processed_shape": {
+    "train_features": [
+      736,
+      29
+    ],
+    "test_features": [
+      184,
+      29
+    ],
+    "train_target": [
+      736
+    ],
+    "test_target": [
+      184
+    ]
+  },
+  "feature_types": {
+    "numeric": [
+      "age",
+      "trestbps",
+      "chol",
+      "thalch",
+      "oldpeak",
+      "ca"
+    ],
+    "categorical": [
+      "sex",
+      "dataset",
+      "cp",
+      "fbs",
+      "restecg",
+      "exang",
+      "slope",
+      "thal"
+    ],
+    "processed_feature_count": 29,
+    "processed_features": [
+      "age",
+      "trestbps",
+      "chol",
+      "thalch",
+      "oldpeak",
+      "ca",
+      "sex_Female",
+      "sex_Male",
+      "dataset_Cleveland",
+      "dataset_Hungary",
+      "dataset_Switzerland",
+      "dataset_VA Long Beach",
+      "cp_asymptomatic",
+      "cp_atypical angina",
+      "cp_non-anginal",
+      "cp_typical angina",
+      "fbs_False",
+      "fbs_True",
+      "restecg_lv hypertrophy",
+      "restecg_normal",
+      "restecg_st-t abnormality",
+      "exang_False",
+      "exang_True",
+      "slope_downsloping",
+      "slope_flat",
+      "slope_upsloping",
+      "thal_fixed defect",
+      "thal_normal",
+      "thal_reversable defect"
+    ]
+  },
+  "preprocessing_steps": [
+    "Train-test split before preprocessing",
+    "Numeric missing value imputation fitted on training data only",
+    "Categorical missing value imputation fitted on training data only",
+    "Categorical one-hot encoding fitted on training data only",
+    "Numeric scaling with StandardScaler fitted on training data only"
+  ],
+  "data_split": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "stratified_by": "num"
+  },
+  "target_distribution": {
+    "train": {
+      "0": 329,
+      "1": 212,
+      "2": 87,
+      "3": 86,
+      "4": 22
+    },
+    "test": {
+      "0": 82,
+      "1": 53,
+      "2": 22,
+      "3": 21,
+      "4": 6
+    }
+  }
+}

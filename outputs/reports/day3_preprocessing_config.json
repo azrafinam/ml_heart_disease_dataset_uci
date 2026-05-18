@@ -1,0 +1,66 @@
+{
+  "preprocessor_path": "outputs/models/preprocessor.pkl",
+  "numeric_features": [
+    "age",
+    "trestbps",
+    "chol",
+    "thalch",
+    "oldpeak",
+    "ca"
+  ],
+  "categorical_features": [
+    "sex",
+    "dataset",
+    "cp",
+    "fbs",
+    "restecg",
+    "exang",
+    "slope",
+    "thal"
+  ],
+  "processed_features": [
+    "age",
+    "trestbps",
+    "chol",
+    "thalch",
+    "oldpeak",
+    "ca",
+    "sex_Female",
+    "sex_Male",
+    "dataset_Cleveland",
+    "dataset_Hungary",
+    "dataset_Switzerland",
+    "dataset_VA Long Beach",
+    "cp_asymptomatic",
+    "cp_atypical angina",
+    "cp_non-anginal",
+    "cp_typical angina",
+    "fbs_False",
+    "fbs_True",
+    "restecg_lv hypertrophy",
+    "restecg_normal",
+    "restecg_st-t abnormality",
+    "exang_False",
+    "exang_True",
+    "slope_downsloping",
+    "slope_flat",
+    "slope_upsloping",
+    "thal_fixed defect",
+    "thal_normal",
+    "thal_reversable defect"
+  ],
+  "target_column": "num",
+  "split": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "stratify": true
+  },
+  "rules": {
+    "fit_preprocessing_on": "training data only",
+    "transform_test_with": "the fitted training preprocessor",
+    "numeric_imputation": "median",
+    "numeric_scaling": "StandardScaler",
+    "categorical_imputation": "most_frequent",
+    "categorical_encoding": "OneHotEncoder(handle_unknown=ignore)"
+  }
+}

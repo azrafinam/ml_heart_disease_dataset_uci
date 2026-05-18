@@ -1,0 +1,15 @@
+
+DATASET: UCI Heart Disease
+Generated: 2026-05-19 01:56:58.820391
+
+DIMENSIONS:
+920 rows × 16 columns
+
+COLUMNS:
+['id', 'age', 'sex', 'dataset', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 'thalch', 'exang', 'oldpeak', 'slope', 'ca', 'thal', 'num']
+
+MISSING VALUES:
+1759 total missing values
+
+DATA TYPES:
+{'id': 'int64', 'age': 'int64', 'sex': 'str', 'dataset': 'str', 'cp': 'str', 'trestbps': 'float64', 'chol': 'float64', 'fbs': 'object', 'restecg': 'str', 'thalch': 'float64', 'exang': 'object', 'oldpeak': 'float64', 'slope': 'str', 'ca': 'float64', 'thal': 'str', 'num': 'int64'}
