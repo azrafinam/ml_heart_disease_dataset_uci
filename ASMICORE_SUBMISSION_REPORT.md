@@ -26,7 +26,6 @@
 | Git commits | 1 (initial implementation) | — |
 | Preprocessing safety | Leakage-free | Leakage-free |
 
-**Repository:** https://github.com/azrafinam/ml_heart_disease_dataset_uci
 
 ---
 
@@ -341,12 +340,9 @@ All results are stored in structured JSON (and CSV where noted):
 
 ### Assumptions
 
-1. Educational use — not for clinical deployment without validation  
-2. Multiclass: severity levels treated as distinct classes  
-3. Binary: severity 1–4 equivalently labeled “disease present”  
-4. All 14 features used after removing `id` and `num`  
-5. Missing-at-random (MAR) for imputation  
-6. Fixed `random_state=42` for reproducibility  
+1. All 14 features used after removing `id` and `num`  
+2. Missing-at-random (MAR) for imputation  
+    
 
 ### What Worked Well
 
