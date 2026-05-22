@@ -262,4 +262,4 @@ bundle = joblib.load("outputs/models/gaussian_nb_final_bundle_binary.pkl")
 
 ## Conclusion
 
-The project is a complete, reproducible submission for heart disease prediction with **multiclass severity (0–4)** and **binary presence (0 vs 1)**. It includes six-day notebooks, dual-target CLI pipeline, structured JSON reports, visualizations, and deployable model bundles for both tasks. See [ASMICORE_SUBMISSION_REPORT.md](ASMICORE_SUBMISSION_REPORT.md) for the full section-by-section submission document.
+The project is a complete, reproducible submission for heart disease prediction with multiclass severity (0–4) and binary presence (0 vs 1). It includes six-day notebooks, dual-target CLI pipeline, structured JSON reports, visualizations, and deployable model bundles for both tasks. See [ASMICORE_SUBMISSION_REPORT.md](ASMICORE_SUBMISSION_REPORT.md) for the full section-by-section submission document.
