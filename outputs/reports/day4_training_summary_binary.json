@@ -1,7 +1,7 @@
 {
-  "training_date": "2026-05-22T23:24:46.605877",
-  "target_mode": "multiclass",
-  "target_description": "0=no disease, 1-4=increasing heart disease severity",
+  "training_date": "2026-05-22T23:24:59.980408",
+  "target_mode": "binary",
+  "target_description": "0=no disease, 1=disease (original num values 1-4 mapped to 1)",
   "total_models_defined": 22,
   "total_models_trained": 22,
   "models_trained": [
@@ -32,112 +32,112 @@
     {
       "model": "dummy_baseline",
       "status": "success",
-      "timestamp": "2026-05-22T23:23:59.589301"
+      "timestamp": "2026-05-22T23:24:48.493571"
     },
     {
       "model": "logistic_regression",
       "status": "success",
-      "timestamp": "2026-05-22T23:23:59.609575"
+      "timestamp": "2026-05-22T23:24:48.499235"
     },
     {
       "model": "ridge_classifier",
       "status": "success",
-      "timestamp": "2026-05-22T23:23:59.613454"
+      "timestamp": "2026-05-22T23:24:48.502686"
     },
     {
       "model": "sgd_classifier",
       "status": "success",
-      "timestamp": "2026-05-22T23:23:59.645067"
+      "timestamp": "2026-05-22T23:24:48.511055"
     },
     {
       "model": "perceptron",
       "status": "success",
-      "timestamp": "2026-05-22T23:23:59.651236"
+      "timestamp": "2026-05-22T23:24:48.513424"
     },
     {
       "model": "knn",
       "status": "success",
-      "timestamp": "2026-05-22T23:23:59.653459"
+      "timestamp": "2026-05-22T23:24:48.515226"
     },
     {
       "model": "gaussian_nb",
       "status": "success",
-      "timestamp": "2026-05-22T23:23:59.656121"
+      "timestamp": "2026-05-22T23:24:48.517483"
     },
     {
       "model": "linear_svm",
       "status": "success",
-      "timestamp": "2026-05-22T23:23:59.663501"
+      "timestamp": "2026-05-22T23:24:48.520507"
     },
     {
       "model": "svm_rbf",
       "status": "success",
-      "timestamp": "2026-05-22T23:23:59.778239"
+      "timestamp": "2026-05-22T23:24:48.576420"
     },
     {
       "model": "decision_tree",
       "status": "success",
-      "timestamp": "2026-05-22T23:23:59.784518"
+      "timestamp": "2026-05-22T23:24:48.581081"
     },
     {
       "model": "random_forest",
       "status": "success",
-      "timestamp": "2026-05-22T23:24:00.677017"
+      "timestamp": "2026-05-22T23:24:49.325290"
     },
     {
       "model": "extra_trees",
       "status": "success",
-      "timestamp": "2026-05-22T23:24:01.307531"
+      "timestamp": "2026-05-22T23:24:49.920912"
     },
     {
       "model": "bagging",
       "status": "success",
-      "timestamp": "2026-05-22T23:24:04.333946"
+      "timestamp": "2026-05-22T23:24:50.042197"
     },
     {
       "model": "adaboost",
       "status": "success",
-      "timestamp": "2026-05-22T23:24:04.546451"
+      "timestamp": "2026-05-22T23:24:50.194666"
     },
     {
       "model": "gradient_boosting",
       "status": "success",
-      "timestamp": "2026-05-22T23:24:05.338643"
+      "timestamp": "2026-05-22T23:24:50.337243"
     },
     {
       "model": "hist_gradient_boosting",
       "status": "success",
-      "timestamp": "2026-05-22T23:24:32.119297"
+      "timestamp": "2026-05-22T23:24:55.525732"
     },
     {
       "model": "linear_discriminant_analysis",
       "status": "success",
-      "timestamp": "2026-05-22T23:24:32.126542"
+      "timestamp": "2026-05-22T23:24:55.537079"
     },
     {
       "model": "nearest_centroid",
       "status": "success",
-      "timestamp": "2026-05-22T23:24:32.130217"
+      "timestamp": "2026-05-22T23:24:55.543412"
     },
     {
       "model": "xgboost",
       "status": "success",
-      "timestamp": "2026-05-22T23:24:35.398416"
+      "timestamp": "2026-05-22T23:24:55.844013"
     },
     {
       "model": "lightgbm",
       "status": "success",
-      "timestamp": "2026-05-22T23:24:43.221316"
+      "timestamp": "2026-05-22T23:24:57.394363"
     },
     {
       "model": "catboost",
       "status": "success",
-      "timestamp": "2026-05-22T23:24:43.876781"
+      "timestamp": "2026-05-22T23:24:57.603369"
     },
     {
       "model": "random_forest_random_search",
       "status": "success",
-      "timestamp": "2026-05-22T23:24:46.605213"
+      "timestamp": "2026-05-22T23:24:59.980007"
     }
   ],
   "data_split": {

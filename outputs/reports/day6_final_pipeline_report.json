@@ -2,12 +2,14 @@
   "project_information": {
     "project_name": "Heart Disease Prediction",
     "dataset": "UCI Heart Disease",
-    "generation_date": "2026-05-19T02:38:08.683243"
+    "generation_date": "2026-05-22T23:24:48.432819"
   },
+  "target_mode": "multiclass",
+  "target_description": "0=no disease, 1-4=increasing heart disease severity",
   "best_model": {
     "model_name": "hist_gradient_boosting",
     "model_version": "1.0",
-    "creation_date": "2026-05-19T02:38:08.682882",
+    "creation_date": "2026-05-22T23:24:48.432507",
     "performance_metrics": {
       "accuracy": 0.6141304347826086,
       "precision": 0.6071853073021979,
@@ -17,7 +19,8 @@
     },
     "file_path": "outputs/models/hist_gradient_boosting_final_bundle.pkl",
     "dataset": "UCI Heart Disease",
-    "target": "num: multiclass heart disease severity (0-4)",
+    "target_mode": "multiclass",
+    "target": "num (0=no disease, 1-4=increasing heart disease severity)",
     "preprocessing": "Saved preprocessor fitted on training data only",
     "models_compared": 22
   },

@@ -1,4 +1,4 @@
-# Model Usage Guide (multiclass)
+# Model Usage Guide (binary)
 
 Load the final bundle and pass raw feature rows with the original feature columns
 except `id` and `num`.
@@ -7,7 +7,7 @@ except `id` and `num`.
 import joblib
 import pandas as pd
 
-bundle = joblib.load("outputs/models/hist_gradient_boosting_final_bundle.pkl")
+bundle = joblib.load("outputs/models/gaussian_nb_final_bundle_binary.pkl")
 preprocessor = bundle["preprocessor"]
 model = bundle["model"]
 

@@ -11,7 +11,9 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
+
+TargetMode = Literal["multiclass", "binary"]
 
 import joblib
 import numpy as np
@@ -57,7 +59,37 @@ except Exception:  # pragma: no cover - optional dependency guard
 
 RANDOM_STATE = 42
 TARGET_COLUMN = "num"
+BINARY_TARGET_COLUMN = "num_binary"
 ID_COLUMNS = ["id"]
+
+# num supports two supervised formulations:
+# - multiclass: 0=no disease, 1-4=increasing severity (five classes)
+# - binary: 0=no disease, 1=disease (severity levels 1-4 collapsed to 1)
+TARGET_MODE_DESCRIPTIONS = {
+    "multiclass": "0=no disease, 1-4=increasing heart disease severity",
+    "binary": "0=no disease, 1=disease (original num values 1-4 mapped to 1)",
+}
+
+
+def encode_target(y: pd.Series, mode: TargetMode = "multiclass") -> pd.Series:
+    """Encode the raw num target for modeling."""
+    y_encoded = pd.to_numeric(y, errors="raise").astype(int)
+    unexpected = sorted(set(y_encoded.unique()) - {0, 1, 2, 3, 4})
+    if unexpected:
+        raise ValueError(f"Unexpected target values in '{TARGET_COLUMN}': {unexpected}")
+
+    if mode == "multiclass":
+        return y_encoded
+    if mode == "binary":
+        return (y_encoded > 0).astype(int)
+    raise ValueError(f"Unknown target mode: {mode}")
+
+
+def add_binary_target_column(df: pd.DataFrame, source_col: str = TARGET_COLUMN) -> pd.DataFrame:
+    """Add a derived binary target column alongside the original num severity labels."""
+    df_out = df.copy()
+    df_out[BINARY_TARGET_COLUMN] = encode_target(df_out[source_col], mode="binary")
+    return df_out
 
 
 def load_data(path: str | Path) -> pd.DataFrame:
@@ -122,9 +154,11 @@ def prepare_train_test_data(
     test_size: float = 0.2,
     random_state: int = RANDOM_STATE,
     target_col: str = TARGET_COLUMN,
+    target_mode: TargetMode = "multiclass",
 ) -> dict[str, Any]:
     """Split first, then fit preprocessing on the training data only."""
-    X, y = split_features_target(df, target_col=target_col)
+    X, y_raw = split_features_target(df, target_col=target_col)
+    y = encode_target(y_raw, mode=target_mode)
     numeric_features, categorical_features = get_feature_types(X)
 
     X_train_raw, X_test_raw, y_train, y_test = train_test_split(
@@ -146,6 +180,9 @@ def prepare_train_test_data(
     return {
         "X": X,
         "y": y,
+        "y_raw": y_raw,
+        "target_mode": target_mode,
+        "target_description": TARGET_MODE_DESCRIPTIONS[target_mode],
         "X_train_raw": X_train_raw.reset_index(drop=True),
         "X_test_raw": X_test_raw.reset_index(drop=True),
         "X_train": X_train,
@@ -159,8 +196,9 @@ def prepare_train_test_data(
     }
 
 
-def build_model_zoo(random_state: int = RANDOM_STATE) -> dict[str, Any]:
+def build_model_zoo(random_state: int = RANDOM_STATE, target_mode: TargetMode = "multiclass") -> dict[str, Any]:
     """Return a broad, beginner-friendly classifier collection."""
+    is_binary = target_mode == "binary"
     models: dict[str, Any] = {
         "dummy_baseline": DummyClassifier(strategy="most_frequent"),
         "logistic_regression": LogisticRegression(max_iter=3000, random_state=random_state),
@@ -198,36 +236,45 @@ def build_model_zoo(random_state: int = RANDOM_STATE) -> dict[str, Any]:
     }
 
     if XGBClassifier is not None:
-        models["xgboost"] = XGBClassifier(
-            n_estimators=200,
-            max_depth=4,
-            learning_rate=0.05,
-            subsample=0.9,
-            colsample_bytree=0.9,
-            random_state=random_state,
-            n_jobs=-1,
-            eval_metric="mlogloss",
-        )
+        xgb_params: dict[str, Any] = {
+            "n_estimators": 200,
+            "max_depth": 4,
+            "learning_rate": 0.05,
+            "subsample": 0.9,
+            "colsample_bytree": 0.9,
+            "random_state": random_state,
+            "n_jobs": -1,
+        }
+        if is_binary:
+            xgb_params["objective"] = "binary:logistic"
+            xgb_params["eval_metric"] = "logloss"
+        else:
+            xgb_params["eval_metric"] = "mlogloss"
+        models["xgboost"] = XGBClassifier(**xgb_params)
 
     if LGBMClassifier is not None:
-        models["lightgbm"] = LGBMClassifier(
-            n_estimators=200,
-            learning_rate=0.05,
-            random_state=random_state,
-            n_jobs=-1,
-            verbose=-1,
-        )
+        lgbm_params: dict[str, Any] = {
+            "n_estimators": 200,
+            "learning_rate": 0.05,
+            "random_state": random_state,
+            "n_jobs": -1,
+            "verbose": -1,
+        }
+        if is_binary:
+            lgbm_params["objective"] = "binary"
+        models["lightgbm"] = LGBMClassifier(**lgbm_params)
 
     if CatBoostClassifier is not None:
-        models["catboost"] = CatBoostClassifier(
-            iterations=200,
-            learning_rate=0.05,
-            depth=5,
-            loss_function="MultiClass",
-            random_seed=random_state,
-            allow_writing_files=False,
-            verbose=False,
-        )
+        catboost_params: dict[str, Any] = {
+            "iterations": 200,
+            "learning_rate": 0.05,
+            "depth": 5,
+            "loss_function": "Logloss" if is_binary else "MultiClass",
+            "random_seed": random_state,
+            "allow_writing_files": False,
+            "verbose": False,
+        }
+        models["catboost"] = CatBoostClassifier(**catboost_params)
 
     models["random_forest_random_search"] = RandomizedSearchCV(
         estimator=RandomForestClassifier(random_state=random_state, n_jobs=-1),
@@ -271,7 +318,22 @@ def evaluate_classifier(model: Any, X_test: pd.DataFrame, y_test: pd.Series) -> 
     }
 
     try:
-        metrics["roc_auc"] = roc_auc_score(y_test, y_score, multi_class="ovr", average="weighted")
+        if y_score is not None:
+            unique_classes = np.unique(y_test)
+            if len(unique_classes) == 2:
+                if getattr(y_score, "ndim", 1) == 2 and y_score.shape[1] >= 2:
+                    metrics["roc_auc"] = roc_auc_score(y_test, y_score[:, 1])
+                else:
+                    metrics["roc_auc"] = roc_auc_score(y_test, y_score)
+            else:
+                metrics["roc_auc"] = roc_auc_score(
+                    y_test,
+                    y_score,
+                    multi_class="ovr",
+                    average="weighted",
+                )
+        else:
+            metrics["roc_auc"] = np.nan
     except Exception:
         metrics["roc_auc"] = np.nan
 

@@ -1,13 +1,9 @@
 """
 Command-line pipeline for the UCI Heart Disease project.
 
-This script mirrors the notebook workflow:
-1. load raw data,
-2. split before preprocessing,
-3. fit preprocessing only on the training data,
-4. train a broad set of classifiers,
-5. evaluate on the held-out test set,
-6. save the best final bundle for reuse.
+This script mirrors the notebook workflow for both target formulations:
+1. multiclass severity on num (0-4),
+2. binary presence on num (0=no disease, 1=disease with 1-4 collapsed to 1).
 """
 
 from __future__ import annotations
@@ -21,6 +17,9 @@ import pandas as pd
 
 from utils import (
     RANDOM_STATE,
+    TARGET_COLUMN,
+    TARGET_MODE_DESCRIPTIONS,
+    TargetMode,
     build_model_zoo,
     create_model_comparison_report,
     ensure_output_dirs,
@@ -32,38 +31,51 @@ from utils import (
     save_model,
 )
 
-
 DATA_PATH = Path("data/heart_disease_uci.csv")
 
 
-def main() -> None:
-    print("HEART DISEASE PREDICTION - FULL ML PIPELINE")
-    ensure_output_dirs()
+def _artifact_suffix(target_mode: TargetMode) -> str:
+    return "" if target_mode == "multiclass" else "_binary"
 
-    print("\nLoading data")
-    df = load_data(DATA_PATH)
+
+def run_pipeline(df: pd.DataFrame, target_mode: TargetMode) -> dict[str, str]:
+    """Train, evaluate, and persist artifacts for one target formulation."""
+    suffix = _artifact_suffix(target_mode)
+    mode_label = target_mode.upper()
+    target_description = TARGET_MODE_DESCRIPTIONS[target_mode]
+
+    print(f"\n{'=' * 72}")
+    print(f"TARGET MODE: {mode_label} ({target_description})")
+    print(f"{'=' * 72}")
 
     print("\nPreparing leakage-safe train/test data")
-    prepared = prepare_train_test_data(df, random_state=RANDOM_STATE)
+    prepared = prepare_train_test_data(df, random_state=RANDOM_STATE, target_mode=target_mode)
     X_train = prepared["X_train"]
     X_test = prepared["X_test"]
     y_train = prepared["y_train"]
     y_test = prepared["y_test"]
     preprocessor = prepared["preprocessor"]
 
-    X_train.to_csv("data/processed/X_train_processed.csv", index=False)
-    X_test.to_csv("data/processed/X_test_processed.csv", index=False)
-    y_train.to_csv("data/processed/y_train.csv", index=False)
-    y_test.to_csv("data/processed/y_test.csv", index=False)
-    pd.concat([X_train, X_test], ignore_index=True).to_csv("data/processed/X_processed.csv", index=False)
-    pd.concat([y_train, y_test], ignore_index=True).to_csv("data/processed/y_processed.csv", index=False)
-    save_model(preprocessor, "outputs/models/preprocessor.pkl")
+    X_train.to_csv(f"data/processed/X_train_processed{suffix}.csv", index=False)
+    X_test.to_csv(f"data/processed/X_test_processed{suffix}.csv", index=False)
+    y_train.to_csv(f"data/processed/y_train{suffix}.csv", index=False)
+    y_test.to_csv(f"data/processed/y_test{suffix}.csv", index=False)
+    pd.concat([X_train, X_test], ignore_index=True).to_csv(
+        f"data/processed/X_processed{suffix}.csv",
+        index=False,
+    )
+    pd.concat([y_train, y_test], ignore_index=True).to_csv(
+        f"data/processed/y_processed{suffix}.csv",
+        index=False,
+    )
+    save_model(preprocessor, f"outputs/models/preprocessor{suffix}.pkl")
 
     print(f"  Train shape: {X_train.shape}")
     print(f"  Test shape : {X_test.shape}")
+    print(f"  Train target distribution:\n{y_train.value_counts().sort_index().to_string()}")
 
     print("\nDefining models")
-    models = build_model_zoo(random_state=RANDOM_STATE)
+    models = build_model_zoo(random_state=RANDOM_STATE, target_mode=target_mode)
     print(f"  Models defined: {len(models)}")
 
     print("\nTraining models")
@@ -76,7 +88,7 @@ def main() -> None:
             print(f"  Training {model_name}...", end=" ")
             model.fit(X_train, y_train)
             trained_models[model_name] = model
-            model_path = f"outputs/models/{model_name}_trained.pkl"
+            model_path = f"outputs/models/{model_name}_trained{suffix}.pkl"
             save_model(model, model_path)
             model_manifest[model_name] = model_path
             training_log.append(
@@ -98,10 +110,12 @@ def main() -> None:
             )
             print(f"failed: {str(exc)[:80]}")
 
-    save_json(model_manifest, "outputs/reports/day4_model_manifest.json")
+    save_json(model_manifest, f"outputs/reports/day4_model_manifest{suffix}.json")
     save_json(
         {
             "training_date": datetime.now().isoformat(),
+            "target_mode": target_mode,
+            "target_description": target_description,
             "total_models_defined": len(models),
             "total_models_trained": len(trained_models),
             "models_trained": list(trained_models.keys()),
@@ -114,7 +128,7 @@ def main() -> None:
                 "split_before_preprocessing": True,
             },
         },
-        "outputs/reports/day4_training_summary.json",
+        f"outputs/reports/day4_training_summary{suffix}.json",
     )
 
     print("\nEvaluating models")
@@ -128,17 +142,20 @@ def main() -> None:
             print(f"failed: {str(exc)[:80]}")
 
     comparison_df = create_model_comparison_report(evaluation_results)
-    comparison_df.to_csv("outputs/reports/model_comparison_table.csv")
+    comparison_path = f"outputs/reports/model_comparison_table{suffix}.csv"
+    comparison_df.to_csv(comparison_path)
     print("\nModel comparison")
     print(comparison_df.to_string())
 
     best_model_name, best_f1 = get_best_model(comparison_df, metric="f1_score")
     best_model = trained_models[best_model_name]
     best_metrics = comparison_df.loc[best_model_name].to_dict()
-    print(f"\nBest model: {best_model_name} | weighted F1: {best_f1:.4f}")
+    print(f"\nBest model ({target_mode}): {best_model_name} | weighted F1: {best_f1:.4f}")
 
     evaluation_report = {
         "evaluation_date": datetime.now().isoformat(),
+        "target_mode": target_mode,
+        "target_description": target_description,
         "models_evaluated": len(evaluation_results),
         "model_list": list(evaluation_results.keys()),
         "best_model": best_model_name,
@@ -152,7 +169,7 @@ def main() -> None:
             for model, metrics in evaluation_results.items()
         },
     }
-    save_json(evaluation_report, "outputs/reports/day5_evaluation_report.json")
+    save_json(evaluation_report, f"outputs/reports/day5_evaluation_report{suffix}.json")
 
     final_bundle = {
         "model": best_model,
@@ -161,10 +178,12 @@ def main() -> None:
         "feature_names": prepared["feature_names"],
         "numeric_features": prepared["numeric_features"],
         "categorical_features": prepared["categorical_features"],
-        "target_column": "num",
+        "target_column": TARGET_COLUMN,
+        "target_mode": target_mode,
+        "target_description": target_description,
         "class_labels": sorted(y_train.unique().tolist()),
     }
-    final_model_path = f"outputs/models/{best_model_name}_final_bundle.pkl"
+    final_model_path = f"outputs/models/{best_model_name}_final_bundle{suffix}.pkl"
     joblib.dump(final_bundle, final_model_path)
 
     metadata = {
@@ -174,13 +193,14 @@ def main() -> None:
         "performance_metrics": {k: float(v) for k, v in best_metrics.items()},
         "file_path": final_model_path,
         "dataset": "UCI Heart Disease",
-        "target": "num: multiclass heart disease severity (0-4)",
+        "target_mode": target_mode,
+        "target": f"num ({target_description})",
         "preprocessing": "Saved preprocessor fitted on training data only",
         "models_compared": len(evaluation_results),
     }
-    save_json(metadata, f"outputs/models/{best_model_name}_metadata.json")
+    save_json(metadata, f"outputs/models/{best_model_name}_metadata{suffix}.json")
 
-    usage_guide = f"""# Model Usage Guide
+    usage_guide = f"""# Model Usage Guide ({target_mode})
 
 Load the final bundle and pass raw feature rows with the original feature columns
 except `id` and `num`.
@@ -199,7 +219,7 @@ X_new = pd.DataFrame(X_new_array, columns=bundle["feature_names"])
 predictions = model.predict(X_new)
 ```
 """
-    Path("outputs/reports/MODEL_USAGE_GUIDE.txt").write_text(usage_guide)
+    Path(f"outputs/reports/MODEL_USAGE_GUIDE{suffix}.txt").write_text(usage_guide)
 
     save_json(
         {
@@ -208,22 +228,47 @@ predictions = model.predict(X_new)
                 "dataset": "UCI Heart Disease",
                 "generation_date": datetime.now().isoformat(),
             },
+            "target_mode": target_mode,
+            "target_description": target_description,
             "best_model": metadata,
             "all_models_evaluation": evaluation_report["all_model_metrics"],
             "file_structure": {
                 "final_model_bundle": final_model_path,
-                "preprocessor": "outputs/models/preprocessor.pkl",
-                "comparison_table": "outputs/reports/model_comparison_table.csv",
-                "evaluation_report": "outputs/reports/day5_evaluation_report.json",
+                "preprocessor": f"outputs/models/preprocessor{suffix}.pkl",
+                "comparison_table": comparison_path,
+                "evaluation_report": f"outputs/reports/day5_evaluation_report{suffix}.json",
             },
         },
-        "outputs/reports/day6_final_pipeline_report.json",
+        f"outputs/reports/day6_final_pipeline_report{suffix}.json",
     )
 
+    return {
+        "target_mode": target_mode,
+        "best_model_name": best_model_name,
+        "best_f1": f"{best_f1:.4f}",
+        "final_model_path": final_model_path,
+        "models_trained": str(len(trained_models)),
+    }
+
+
+def main() -> None:
+    print("HEART DISEASE PREDICTION - FULL ML PIPELINE")
+    ensure_output_dirs()
+
+    print("\nLoading data")
+    df = load_data(DATA_PATH)
+
+    summaries = []
+    for target_mode in ("multiclass", "binary"):
+        summaries.append(run_pipeline(df, target_mode))
+
     print("\nPipeline completed successfully")
-    print(f"  Models trained : {len(trained_models)}")
-    print(f"  Best model     : {best_model_name}")
-    print(f"  Final bundle   : {final_model_path}")
+    for summary in summaries:
+        print(
+            f"  [{summary['target_mode']}] models trained: {summary['models_trained']} | "
+            f"best: {summary['best_model_name']} | F1: {summary['best_f1']} | "
+            f"bundle: {summary['final_model_path']}"
+        )
 
 
 if __name__ == "__main__":
