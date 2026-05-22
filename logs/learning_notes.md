@@ -1,3 +1,17 @@
+# Project Learning Timeline:
+## Learning Sessions 01 to 09
+
+| Session | Topic | Outcome |
+|---------|-------|---------|
+| 01 | Conda, pip, environments | Reproducible `ml_1` env |
+| 02 | Jupyter, Git, VS Code | Six-day notebook workflow |
+| 03 | NumPy, Pandas, dataset shape | 920×16, 14 features, target `num` |
+| 04 | Boxplots, heatmaps, imbalance | EDA before modeling |
+| 05 | Precision, recall, F1, ROC, CV | How to score classifiers |
+| 06 | Preprocessing, leakage | 29 features, safe split |
+| 07 | Model types (22 algorithms) | When to use linear / tree / boosting / NB |
+| 08 | Dual target, comparison | Multiclass vs binary results |
+| 09 | Pipeline code, reproducibility | `main.py` + bundles + reports |
 
 ---
 ---
@@ -1602,7 +1616,7 @@ A higher AUC value indicates better discrimination capability between heart dise
 
 Cross Validation is a model evaluation technique used to test the stability and reliability of a machine learning model. Instead of using a single train-test split, the dataset is divided into multiple subsets called folds.
 
-In this project, **K-Fold Cross Validation** was used to evaluate model consistency.
+In this project, K-Fold Cross Validation was used to evaluate model consistency.
 
 ---
 
@@ -1633,3 +1647,564 @@ Cross\ Validation\ Score = \frac{Score_1 + Score_2 + ... + Score_k}{k}
 \]
 
 Cross Validation helps reduce overfitting and provides a more reliable estimate of real-world model performance. In the implementation code, cross-validation was applied to evaluate the stability and generalization capability of the trained machine learning models.
+
+---
+---
+
+# LEARNING SESSION 06
+---
+# PREPROCESSING, FEATURE ENGINEERING & DATA LEAKAGE
+---
+---
+
+## Why Preprocessing Comes After EDA
+
+EDA tells us *what is wrong* with the data (missing values, outliers, imbalance). Preprocessing fixes those issues in a repeatable way before any model sees the full dataset.
+
+In the heart disease project, the order was:
+
+1. Explore raw CSV (`heart_disease_uci.csv`)
+2. Split train / test (80/20, stratified)
+3. Fit preprocessing only on training data
+4. Transform train and test with that same fitted pipeline
+5. Train models on processed training features
+
+##### Key idea
+
+If we impute, encode, or scale using the whole dataset before splitting, information from the test set leaks into training. The model looks better on paper but fails in production.
+
+---
+
+## Train-Test Split (Stratified)
+
+```python
+train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+```
+
+| Parameter | Meaning in this project |
+|-----------|-------------------------|
+| `test_size=0.2` | 736 train / 184 test rows |
+| `stratify=y` | Keeps class proportions similar in train and test |
+| `random_state=42` | Same split every run (reproducibility) |
+
+Stratification matters because class `4` (severe disease) has only 28 rows in the full dataset. A random split without stratify could put almost all severe cases in one fold by accident.
+
+---
+
+## Feature Types in the Dataset
+
+| Type | Count | Examples |
+|------|-------|----------|
+| Numeric | 6 | age, trestbps, chol, thalch, oldpeak, ca |
+| Categorical | 8 | sex, cp, thal, slope, exang, restecg, fbs, dataset |
+| Dropped | 2 | id (identifier), num (target) |
+
+Raw features: **14** → after one-hot encoding: **29** processed columns.
+
+---
+
+## Preprocessing Pipeline Steps
+
+### 1. Numeric path
+
+```
+SimpleImputer(strategy="median") → StandardScaler()
+```
+
+- **Median imputation:** Robust when outliers exist (e.g. cholesterol spikes).
+- **StandardScaler:** Converts each numeric column to mean ≈ 0, std ≈ 1 so distance-based and linear models are not dominated by large-scale features like `chol`.
+
+### 2. Categorical path
+
+```
+SimpleImputer(strategy="most_frequent") → OneHotEncoder(handle_unknown="ignore")
+```
+
+- **Mode imputation:** Fills missing categories with the most common value seen in training.
+- **One-hot encoding:** Each category becomes its own binary column (e.g. `cp_typical angina`, `cp_asymptomatic`).
+
+### 3. ColumnTransformer
+
+Both paths are combined with `ColumnTransformer` so numeric and categorical columns are processed in parallel, then concatenated into one matrix for sklearn models.
+
+---
+
+## Data Leakage Checklist (What I Learned to Avoid)
+
+| Mistake | Why it is leakage |
+|---------|-------------------|
+| Fit imputer on full `df` before split | Test missing patterns influence train imputation |
+| Fit scaler on train + test together | Test value ranges leak into scaling parameters |
+| Tune model on test set | Test set is no longer “unseen” |
+| Use target distribution from test to choose metrics | Should be decided from train/validation only |
+
+Correct pattern used in `scripts/utils.py`:
+
+```python
+preprocessor.fit(X_train_raw)      # learn only from train
+X_train = preprocessor.transform(X_train_raw)
+X_test = preprocessor.transform(X_test_raw)  # apply train rules
+```
+
+---
+
+## Saving the Fitted Preprocessor
+
+The preprocessor is saved with `joblib` so inference uses the same imputation values, category mappings, and scaling as training:
+
+```python
+joblib.dump(preprocessor, "outputs/models/preprocessor.pkl")
+```
+
+This is bundled with the final model so a new patient row (raw features only) can be scored without re-running the notebook.
+
+---
+---
+
+# LEARNING SESSION 07
+---
+# MACHINE LEARNING MODEL TYPES (CLASSIFICATION)
+---
+---
+
+## High-Level Taxonomy
+
+Supervised learning for classification means: learn a mapping from features **X** to label **y**.
+
+```
+                    Supervised Classification
+                              |
+        +---------------------+---------------------+
+        |                     |                     |
+   Parametric            Non-parametric         Ensemble
+   (fixed form)          (flexible memory)      (many models)
+        |                     |                     |
+   Linear / LDA          KNN, trees            Forests, boosting
+   Logistic, SVM         Naive Bayes           Bagging, stacking
+```
+
+##### Key idea
+
+- **Parametric:** Assumes a functional form (e.g. linear boundary). Few parameters, fast, interpretable.
+- **Non-parametric:** Complexity grows with data (e.g. KNN stores all training points).
+- **Ensemble:** Combines many weak learners into one stronger predictor.
+
+---
+
+## Model Families Used in This Project (22 Models)
+
+| Family | Models in project | Base idea |
+|--------|-------------------|-----------|
+| Baseline | DummyClassifier | Predict most frequent class — sanity check |
+| Linear | Logistic Regression, Ridge, SGD, Perceptron | Linear decision boundary (or hyperplane) |
+| Discriminant | LDA, Nearest Centroid | Assume class-specific distributions or centroids |
+| Distance | KNN | Class = majority vote of nearest training points |
+| Probabilistic | Gaussian Naive Bayes | Bayes rule + feature independence assumption |
+| Margin-based | Linear SVM, RBF SVM | Maximize margin between classes |
+| Tree | Decision Tree | Recursive splits on features |
+| Bagging | Bagging (trees), Random Forest, Extra Trees | Many trees on bootstrap samples |
+| Boosting | AdaBoost, Gradient Boosting, HistGradientBoosting, XGBoost, LightGBM, CatBoost | Sequentially correct previous errors |
+| Tuning | RandomizedSearchCV + RF | Random hyperparameter search with CV |
+
+---
+
+## 1. Baseline Models
+
+### DummyClassifier
+
+Always predicts the majority class (or stratified random guess).
+
+**Purpose in learning flow:**
+
+- If a complex model cannot beat the dummy, something is wrong (features, leakage, or labels).
+- In our multiclass run, dummy accuracy ≈ 0.45 (matches largest class share).
+
+---
+
+## 2. Linear Models
+
+### Logistic Regression
+
+Models class probability with a sigmoid (binary) or softmax (multiclass) over a linear combination of features.
+
+\[
+P(y=1|x) = \sigma(w^T x + b)
+\]
+
+| Strength | Weakness |
+|----------|----------|
+| Fast, interpretable coefficients | Cannot capture non-linear interactions alone |
+| Works well after scaling | Sensitive to correlated features |
+
+**Heart disease context:** Good baseline when relationships are roughly monotonic (e.g. higher `oldpeak` ↔ more disease risk).
+
+### Ridge Classifier
+
+Linear classifier with L2 penalty on weights. Similar spirit to logistic but optimizes a different loss.
+
+**Learning note:** In our evaluation, Ridge sometimes matched high accuracy but had no `predict_proba`, so ROC-AUC was missing for that row in the comparison table.
+
+### SGDClassifier & Perceptron
+
+- **SGD:** Stochastic gradient descent on linear models — scalable to large data.
+- **Perceptron:** Early linear classifier; updates weights on misclassified points only.
+
+Both teach that many “different” sklearn names are still linear decision boundaries under the hood.
+
+---
+
+## 3. Discriminant & Prototype Models
+
+### Linear Discriminant Analysis (LDA)
+
+Assumes each class has a Gaussian distribution with a shared covariance matrix. Finds linear separators that maximize class separation.
+
+**When useful:** Moderate feature count, roughly normal numeric features after scaling.
+
+### Nearest Centroid
+
+Each class is represented by the mean feature vector (centroid). New samples go to the nearest centroid.
+
+**Learning note:** Simple, fast, and surprisingly competitive on tabular medical data in our comparison.
+
+---
+
+## 4. Distance-Based: K-Nearest Neighbors (KNN)
+
+No explicit training phase — the model stores all training points.
+
+Prediction = majority class among the **k** closest points (Euclidean distance after scaling).
+
+| Strength | Weakness |
+|----------|----------|
+| No training time | Slow prediction on large datasets |
+| Flexible boundaries | Curse of dimensionality (29 features still OK here) |
+| Intuitive | Sensitive to feature scale → why StandardScaler mattered |
+
+**Parameter learned:** `n_neighbors=5` in our zoo.
+
+---
+
+## 5. Probabilistic: Gaussian Naive Bayes
+
+Applies Bayes’ theorem:
+
+\[
+P(y|x) \propto P(y) \prod_i P(x_i|y)
+\]
+
+**“Naive”** = assumes features are independent given the class (often false, but works surprisingly well on tabular data).
+
+| Strength | Weakness |
+|----------|----------|
+| Very fast train/predict | Independence assumption is strict |
+| Good on binary tasks with mixed features | Poor if features are highly correlated |
+
+**Project result:** Gaussian NB was best on binary target (F1 ≈ 0.87) — disease vs no-disease is a simpler boundary than 5 severity levels.
+
+---
+
+## 6. Support Vector Machines (SVM)
+
+### LinearSVC
+
+Finds the hyperplane with maximum margin between classes.
+
+### SVC (RBF kernel)
+
+Kernel trick maps features into higher dimensions so non-linear boundaries are possible.
+
+| Kernel | Boundary shape |
+|--------|----------------|
+| Linear | Straight line / hyperplane |
+| RBF | Smooth curved regions |
+
+**Learning note:** SVMs need scaling; we used `probability=True` on RBF SVM to enable ROC-AUC via Platt-style probabilities.
+
+---
+
+## 7. Decision Trees
+
+Splits data recursively on one feature at a time to minimize impurity (Gini or entropy).
+
+```
+                    [age <= 55?]
+                   /            \
+              Yes /              \ No
+                /                \
+        [chol <= 240?]      [cp = asymptomatic?]
+              ...                  ...
+```
+
+| Strength | Weakness |
+|----------|----------|
+| No scaling required | Overfits easily |
+| Easy to visualize | Unstable — small data change → different tree |
+
+**Our settings:** `max_depth=10`, `min_samples_split=10` to limit overfitting.
+
+---
+
+## 8. Ensemble — Bagging
+
+### BaggingClassifier
+
+Trains many decision trees on bootstrap samples (random rows with replacement) and votes.
+
+### RandomForestClassifier
+
+Bagging + feature subsampling at each split → trees are less correlated → better generalization.
+
+### ExtraTreesClassifier
+
+Like Random Forest but splits are more random (extremely randomized trees) → often lower variance.
+
+| Concept | Meaning |
+|---------|---------|
+| `n_estimators=200` | 200 trees vote |
+| `max_depth=15` | Cap tree depth |
+| `n_jobs=-1` | Use all CPU cores |
+
+**Heart disease project:** Tree ensembles were strong on both targets; Random Forest + RandomizedSearch had among the highest ROC-AUC on binary.
+
+---
+
+## 9. Ensemble — Boosting
+
+Boosting builds trees sequentially, each one focusing on mistakes of the previous ensemble.
+
+| Algorithm | Core idea |
+|-----------|-----------|
+| AdaBoost | Up-weight misclassified samples |
+| GradientBoosting | Fit new trees to pseudo-residuals (gradient of loss) |
+| HistGradientBoosting | Histogram-based splits — fast on medium tabular data |
+| XGBoost / LightGBM / CatBoost | Optimized gradient boosting implementations |
+
+**Project result (multiclass):** **HistGradientBoosting** won best weighted F1 (0.6096) — severity prediction is harder than binary presence.
+
+**Boosting vs bagging (mental model):**
+
+- **Bagging:** Parallel trees, reduce variance.
+- **Boosting:** Serial trees, reduce bias.
+
+---
+
+## 10. Hyperparameter Search
+
+### RandomizedSearchCV
+
+- Samples random combinations from a parameter grid.
+- Uses K-fold CV on training data to score each combination.
+- Picks the best estimator and refits it.
+
+In this project, only Random Forest used this in the 22-model zoo (`n_iter=8`, `f1_weighted` scoring).
+
+**Learning gap identified:** Tuning more models could improve multiclass severity class 4 recall.
+
+---
+
+## Choosing a Model Type 
+
+| Situation | Start with | Why |
+|-----------|------------|-----|
+| Need interpretability | Logistic Regression, Decision Tree (shallow) | Coefficients or rules |
+| Small/medium tabular data | Random Forest, HistGradientBoosting | Strong default |
+| Binary yes/no, fast baseline | Gaussian NB, Logistic Regression | Simple, often strong |
+| Many classes, imbalance | Boosting + weighted F1 | Handles hard multiclass better than plain accuracy |
+| High-dimensional sparse text | Linear SVM, SGD | — (not this dataset) |
+| Production latency critical | Naive Bayes, shallow tree, linear | Fast inference |
+
+---
+---
+
+# LEARNING SESSION 08
+---
+# DUAL TARGET, CONFUSION MATRIX & MODEL COMPARISON
+---
+---
+
+## Two Ways to Treat the Same `num` Column
+
+The UCI target `num` originally has values 0–4.
+
+| Formulation | Classes | Clinical meaning |
+|-------------|---------|------------------|
+| Multiclass | 5 | Severity: none → mild → severe |
+| Binary | 2 | 0 = healthy, 1 = any disease (1+2+3+4 → 1) |
+
+**Why both matter:**
+
+- **Binary** answers: “Does this patient have heart disease?”
+- **Multiclass** answers: “How severe is it?”
+
+Same features and preprocessor; only **y** changes:
+
+```python
+# Multiclass: keep 0,1,2,3,4
+y_multiclass = df["num"]
+
+# Binary: collapse 1-4 into 1
+y_binary = (df["num"] > 0).astype(int)
+```
+
+---
+
+## Binary vs Multiclass — What Changed in Metrics
+
+| Target | Best model (our run) | F1 | Insight |
+|--------|----------------------|-----|---------|
+| Multiclass 0–4 | HistGradientBoosting | 0.6096 | Hard task — rare class 4 |
+| Binary 0/1 | Gaussian Naive Bayes | 0.8694 | Easier separation |
+
+**Learning takeaway:** Good binary accuracy does not mean severity levels are equally predictable. Always state which target formulation was used.
+
+---
+
+## Confusion Matrix (Multiclass)
+
+Rows = true class, columns = predicted class.
+
+For 5 classes, diagonals are correct predictions; off-diagonals show *which* severities get confused (e.g. predicting `2` when truth is `3`).
+
+**What I learned to read:**
+
+- Model strong on class `0` and `1` (more training samples).
+- Class `4` often misclassified — only 28 training examples.
+
+---
+
+## Weighted vs Macro F1
+
+| Average | How it treats classes |
+|---------|----------------------|
+| **Macro** | Each class counts equally (punishes neglect of rare class 4) |
+| **Weighted** | Weighted by support — closer to overall accuracy feel |
+
+We used weighted F1 for model selection because it reflects overall performance while still penalizing some imbalance effects — documented in the submission report.
+
+---
+
+## ROC-AUC: Binary vs Multiclass
+
+| Setting | sklearn approach |
+|---------|------------------|
+| Binary | AUC on positive class probability (`predict_proba[:, 1]`) |
+| Multiclass | `multi_class="ovr"` (one-vs-rest), weighted average |
+
+Some models (Ridge, LinearSVC, Perceptron) lack `predict_proba` → ROC-AUC stored as NaN — not a failure, a capability gap to note in reports.
+
+---
+
+## Model Comparison Workflow (End-to-End Learning Flow)
+
+```
+Day 1  → Understand rows, columns, missing values, target counts
+Day 2  → EDA plots, correlations, imbalance (multiclass + binary)
+Day 3  → Split → preprocess → save X_train, y_train, y_train_binary
+Day 4  → Train 22 models (notebooks) or scripts/main.py (both targets)
+Day 5  → Evaluate all models on same test set → comparison CSV
+Day 6  → Pick best → save bundle (model + preprocessor + metadata)
+```
+
+**Fair comparison rules I applied:**
+
+1. Same `random_state=42` split.
+2. Same 29 processed features per target mode.
+3. Same metrics functions in `evaluate_classifier()`.
+4. Best model chosen only by held-out test weighted F1 (not train score).
+
+---
+
+## Results Snapshot 
+
+### Multiclass — top 3 by F1
+
+| Model | F1 | ROC-AUC |
+|-------|-----|---------|
+| HistGradientBoosting | 0.6096 | 0.8293 |
+| Gradient Boosting | 0.5926 | 0.8322 |
+| XGBoost | 0.5797 | 0.8445 |
+
+### Binary — top 3 by F1
+
+| Model | F1 | ROC-AUC |
+|-------|-----|---------|
+| Gaussian Naive Bayes | 0.8694 | 0.9174 |
+| CatBoost | 0.8636 | 0.9179 |
+| LightGBM | 0.8631 | 0.9140 |
+
+The multiclass winner (HistGradientBoosting) was not the binary winner — different algorithms fit different problem shapes.
+
+---
+
+## Production Bundle (Final Model)
+
+```python
+bundle = {
+    "model": trained_classifier,
+    "preprocessor": fitted_column_transformer,
+    "feature_names": [...],
+    "target_mode": "multiclass" or "binary",
+    "target_description": "...",
+}
+```
+
+Inference path:
+
+1. Raw patient row (14 features, no `id`/`num`)
+2. `preprocessor.transform()`
+3. `model.predict()` → class label
+
+Two bundles in this project:
+
+- `hist_gradient_boosting_final_bundle.pkl` — severity 0–4
+- `gaussian_nb_final_bundle_binary.pkl` — disease yes/no
+
+
+---
+---
+
+# LEARNING SESSION 09
+---
+# SKLEARN PIPELINE PATTERNS & REPRODUCIBILITY
+---
+---
+
+## scripts/utils.py — Functions Learned 
+
+| Function | Role in learning flow |
+|----------|----------------------|
+| `load_data()` | `na_values="?"` for UCI missing markers |
+| `split_features_target()` | Drop `id`, separate `num` |
+| `encode_target(mode=)` | Switch multiclass ↔ binary |
+| `create_preprocessor()` | Leakage-safe ColumnTransformer |
+| `prepare_train_test_data()` | Split + fit + transform in one call |
+| `build_model_zoo()` | 22 classifiers + target-specific boosting params |
+| `evaluate_classifier()` | Accuracy, precision, recall, F1, ROC-AUC, confusion matrix |
+| `get_best_model()` | Rank by weighted F1 |
+
+---
+
+## scripts/main.py 
+
+```bash
+python scripts/main.py
+```
+
+Runs `run_pipeline("multiclass")` then `run_pipeline("binary")`.
+
+
+## Reproducibility Checklist
+
+| Item | Value in project |
+|------|------------------|
+| Random seed | 42 |
+| Environment | `environment.yml` / conda `ml_1` |
+| Data file | `data/heart_disease_uci.csv` |
+| Reports | JSON under `outputs/reports/` |
+| Submission doc | `ASMICORE_SUBMISSION_REPORT.md` |
+
+---
+
+---
+
