@@ -142,6 +142,43 @@ Some files such as logs, utility scripts, and pipeline entry points were initial
 A clean and maintainable project structure improves readability, collaboration, debugging, and deployment readiness.
 
 
+### Model Stability Variations During Cross Validation
+
+During 5-fold cross validation, some models showed unstable performance across folds.
+
+For example:
+
+Decision Tree showed higher standard deviation
+KNN performance fluctuated depending on training subsets
+
+This behavior indicated sensitivity to dataset variation and potential overfitting.
+
+**SOLVE**
+
+Stratified K-Fold Cross Validation was implemented
+Mean F1-score and standard deviation were recorded
+Stability interpretations were added automatically
+
+Example:
+```python
+if scores.std() < 0.03:
+    print("Interpretation : Stable model.")
+
+else:
+    print("Interpretation : Some variance across folds.")
+```
+This helped identify which models generalized better across different subsets of data.
+
+
+
+### Model Stability and Overfitting Awareness
+Cross-validation results showed that some models produced inconsistent performance across folds, especially Decision Tree and KNN models.
+
+**Lesson Learned:**  
+Model evaluation should include stability analysis, not only accuracy metrics. Cross-validation helps identify overfitting and generalization problems.
+
+
+
 ### Notebook Kernel Crash Handling
 While working with Jupyter notebooks inside VS Code, kernel crashes occasionally occurred due to memory issues, package conflicts, or notebook execution problems.
 ##### Troubleshooting Steps Followed
